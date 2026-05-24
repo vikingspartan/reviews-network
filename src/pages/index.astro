@@ -1,8 +1,21 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+export const prerender = false;
+
+import BaseHead from "../components/BaseHead.astro";
+import Footer from "../components/Footer.astro";
+import Header from "../components/Header.astro";
+import ReviewCard from "../components/ReviewCard.astro";
+import StarRating from "../components/StarRating.astro";
+import { SHOP_URL, SITE_DESCRIPTION, SITE_TITLE } from "../consts";
+import { createDb } from "../db";
+import { getPublishedReviews, getReviewStats } from "../db/queries";
+
+const { DATABASE_URL } = Astro.locals.runtime.env;
+const db = createDb(DATABASE_URL);
+const [stats, featured] = await Promise.all([
+	getReviewStats(db),
+	getPublishedReviews(db, 3),
+]);
 ---
 
 <!doctype html>
@@ -13,38 +26,102 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 	<body>
 		<Header />
 		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This
-				template serves as a lightweight, minimally-styled starting point for anyone looking to build
-				a personal website, blog, or portfolio with Astro.
-			</p>
-			<p>
-				This template comes with a few integrations already configured in your
-				<code>astro.config.mjs</code> file. You can customize your setup with
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like Tailwind,
-				React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>Edit this page in <code>src/pages/index.astro</code></li>
-				<li>Edit the site header items in <code>src/components/Header.astro</code></li>
-				<li>Add your name to the footer in <code>src/components/Footer.astro</code></li>
-				<li>Check out the included blog posts in <code>src/content/blog/</code></li>
-				<li>Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code></li>
-			</ul>
-			<p>
-				Have fun! If you get stuck, remember to <a href="https://docs.astro.build/"
-					>read the docs
-				</a> or <a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out <a
-					href="https://github.com/Charca/astro-blog-template"
-					>astro-blog-template
-				</a> by <a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-			</p>
+			<section class="hero">
+				<h1>What customers say about Memorygram</h1>
+				<p class="lede">
+					Memorygram turns memories into keepsakes people treasure. Here's what real
+					customers think.
+				</p>
+				{stats.count > 0 && (
+					<div class="hero-rating">
+						<StarRating rating={stats.averageRating} size="1.5em" />
+						<span class="hero-score">{stats.averageRating.toFixed(1)} / 5</span>
+						<span class="hero-count">
+							from {stats.count} review{stats.count === 1 ? "" : "s"}
+						</span>
+					</div>
+				)}
+				<div class="cta">
+					<a class="btn btn-primary" href="/reviews">Read all reviews</a>
+					<a class="btn" href={SHOP_URL} target="_blank" rel="noopener">Shop Memorygram</a>
+				</div>
+			</section>
+
+			{featured.length > 0 && (
+				<section class="featured">
+					<h2>Recent reviews</h2>
+					<div class="featured-grid">
+						{featured.map((review) => (
+							<ReviewCard review={review} />
+						))}
+					</div>
+					<p class="more">
+						<a href="/reviews">See all {stats.count} reviews →</a>
+					</p>
+				</section>
+			)}
 		</main>
 		<Footer />
+		<style>
+			main {
+				width: 800px;
+			}
+			.hero {
+				text-align: center;
+				padding: 1em 0 2.5em;
+			}
+			.lede {
+				font-size: 1.15em;
+				color: rgb(var(--gray-dark));
+				max-width: 36ch;
+				margin: 0 auto 1.25em;
+			}
+			.hero-rating {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				gap: 0.5em;
+				flex-wrap: wrap;
+				margin-bottom: 1.5em;
+			}
+			.hero-score {
+				font-weight: 700;
+				color: rgb(var(--black));
+			}
+			.hero-count {
+				color: rgb(var(--gray));
+			}
+			.cta {
+				display: flex;
+				gap: 0.75em;
+				justify-content: center;
+				flex-wrap: wrap;
+			}
+			.btn {
+				display: inline-block;
+				padding: 0.6em 1.25em;
+				border-radius: 999px;
+				border: 1px solid var(--accent);
+				color: var(--accent);
+				text-decoration: none;
+				font-weight: 700;
+			}
+			.btn-primary {
+				background: var(--accent);
+				color: #fff;
+			}
+			.featured h2 {
+				text-align: center;
+				margin-bottom: 1em;
+			}
+			.featured-grid {
+				display: grid;
+				gap: 1.5em;
+			}
+			.more {
+				text-align: center;
+				margin-top: 1.5em;
+			}
+		</style>
 	</body>
 </html>

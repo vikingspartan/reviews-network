@@ -1,0 +1,153 @@
+---
+export const prerender = false;
+
+import BaseHead from "../../components/BaseHead.astro";
+import Footer from "../../components/Footer.astro";
+import Header from "../../components/Header.astro";
+import ReviewCard from "../../components/ReviewCard.astro";
+import StarRating from "../../components/StarRating.astro";
+import { SITE_TITLE } from "../../consts";
+import { createDb } from "../../db";
+import { getPublishedReviews, getReviewStats } from "../../db/queries";
+
+const { DATABASE_URL } = Astro.locals.runtime.env;
+const db = createDb(DATABASE_URL);
+const [reviews, stats] = await Promise.all([
+	getPublishedReviews(db),
+	getReviewStats(db),
+]);
+
+const title = `Customer Reviews | ${SITE_TITLE}`;
+const description =
+	stats.count > 0
+		? `Read ${stats.count} customer reviews of Memorygram keepsakes — rated ${stats.averageRating.toFixed(1)} out of 5 on average.`
+		: "Customer reviews of Memorygram personalized keepsakes.";
+
+const maxInDistribution = Math.max(1, ...Object.values(stats.distribution));
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={title} description={description} />
+	</head>
+	<body>
+		<Header />
+		<main>
+			<section class="summary">
+				<h1>Customer Reviews</h1>
+				{stats.count > 0 ? (
+					<div class="summary-grid">
+						<div class="score">
+							<span class="score-number">{stats.averageRating.toFixed(1)}</span>
+							<StarRating rating={stats.averageRating} size="1.4em" />
+							<p class="score-count">
+								Based on {stats.count} review{stats.count === 1 ? "" : "s"}
+							</p>
+						</div>
+						<ul class="distribution">
+							{[5, 4, 3, 2, 1].map((star) => (
+								<li>
+									<span class="bar-label">{star} star</span>
+									<span class="bar-track">
+										<span
+											class="bar-fill"
+											style={`width:${(stats.distribution[star] / maxInDistribution) * 100}%`}
+										></span>
+									</span>
+									<span class="bar-count">{stats.distribution[star]}</span>
+								</li>
+							))}
+						</ul>
+					</div>
+				) : (
+					<p>No reviews yet — check back soon.</p>
+				)}
+			</section>
+
+			<section class="reviews">
+				{reviews.map((review) => (
+					<ReviewCard review={review} />
+				))}
+			</section>
+		</main>
+		<Footer />
+		<style>
+			main {
+				width: 800px;
+			}
+			.summary {
+				margin-bottom: 2.5em;
+			}
+			.summary-grid {
+				display: grid;
+				grid-template-columns: auto 1fr;
+				gap: 2.5em;
+				align-items: center;
+				padding: 1.5em;
+				border: 1px solid rgb(var(--gray-light));
+				border-radius: 12px;
+				background: #fff;
+			}
+			.score {
+				text-align: center;
+			}
+			.score-number {
+				display: block;
+				font-size: 3.5rem;
+				font-weight: 700;
+				line-height: 1;
+				color: rgb(var(--black));
+			}
+			.score-count {
+				margin: 0.5em 0 0 0;
+				font-size: 0.9rem;
+				color: rgb(var(--gray));
+			}
+			.distribution {
+				list-style: none;
+				margin: 0;
+				padding: 0;
+				display: grid;
+				gap: 0.4em;
+			}
+			.distribution li {
+				display: grid;
+				grid-template-columns: 4em 1fr 2em;
+				align-items: center;
+				gap: 0.75em;
+				font-size: 0.9rem;
+			}
+			.bar-label {
+				color: rgb(var(--gray));
+				white-space: nowrap;
+			}
+			.bar-track {
+				height: 0.6em;
+				background: rgb(var(--gray-light));
+				border-radius: 999px;
+				overflow: hidden;
+			}
+			.bar-fill {
+				display: block;
+				height: 100%;
+				background: #f5a623;
+				border-radius: 999px;
+			}
+			.bar-count {
+				text-align: right;
+				color: rgb(var(--gray));
+			}
+			.reviews {
+				display: grid;
+				gap: 1.5em;
+			}
+			@media (max-width: 720px) {
+				.summary-grid {
+					grid-template-columns: 1fr;
+					gap: 1.5em;
+				}
+			}
+		</style>
+	</body>
+</html>

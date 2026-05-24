@@ -30,6 +30,7 @@
 		"@types/react": "^19.2.15",
 		"@types/react-dom": "^19.2.3",
 		"drizzle-kit": "^0.31.10",
+		"tsx": "^4.22.3",
 		"vitest": "^3.2.4",
 		"wrangler": "4.56.0"
 	},
@@ -42,8 +43,13 @@
 		"build": "astro build",
 		"cf-typegen": "wrangler types",
 		"check": "astro build && tsc && wrangler deploy --dry-run",
+		"db:generate": "drizzle-kit generate",
+		"db:migrate": "drizzle-kit migrate",
+		"db:push": "drizzle-kit push",
+		"db:studio": "drizzle-kit studio",
 		"deploy": "wrangler deploy",
 		"dev": "astro dev",
+		"import:reviews": "tsx scripts/import-reviews.ts",
 		"preview": "astro build && wrangler dev"
 	},
 	"type": "module"

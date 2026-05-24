@@ -1,0 +1,63 @@
+---
+interface Props {
+	/** Rating to display, 0-5. May be fractional (e.g. an average). */
+	rating: number;
+	/** Show the numeric value next to the stars. */
+	showValue?: boolean;
+	/** Font size of the stars, any CSS length. */
+	size?: string;
+}
+
+const { rating, showValue = false, size = "1.1em" } = Astro.props;
+
+// Round to the nearest half star for display.
+const rounded = Math.round(rating * 2) / 2;
+const full = Math.floor(rounded);
+const hasHalf = rounded - full === 0.5;
+
+const states = Array.from({ length: 5 }, (_, i) => {
+	if (i < full) return "full";
+	if (i === full && hasHalf) return "half";
+	return "empty";
+});
+
+const label = `${rating.toFixed(1)} out of 5 stars`;
+---
+
+<span class="stars" role="img" aria-label={label} style={`--star-size:${size}`}>
+	{states.map((state) => (
+		<span class:list={["star", state]} aria-hidden="true">★</span>
+	))}
+	{showValue && <span class="value">{rating.toFixed(1)}</span>}
+</span>
+
+<style>
+	.stars {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.05em;
+		line-height: 1;
+	}
+	.star {
+		position: relative;
+		font-size: var(--star-size);
+		color: rgb(var(--gray-light));
+	}
+	.star.full {
+		color: #f5a623;
+	}
+	.star.half::before {
+		content: "★";
+		position: absolute;
+		inset: 0;
+		width: 50%;
+		overflow: hidden;
+		color: #f5a623;
+	}
+	.value {
+		margin-left: 0.45em;
+		font-size: 0.9em;
+		font-weight: 700;
+		color: rgb(var(--gray-dark));
+	}
+</style>
