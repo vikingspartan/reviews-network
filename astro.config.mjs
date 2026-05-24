@@ -7,7 +7,7 @@ import cloudflare from "@astrojs/cloudflare";
 
 // https://astro.build/config
 export default defineConfig({
-	site: "https://reviews.memorygram.com",
+	site: "https://memorygramreviews.com",
 	integrations: [mdx(), sitemap()],
 	adapter: cloudflare({
 		platformProxy: {
