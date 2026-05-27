@@ -1,30 +1,34 @@
 ---
+export const prerender = false;
+
 import Layout from "../layouts/BlogPost.astro";
-import { SHOP_URL } from "../consts";
+
+const site = Astro.locals.site;
 ---
 
 <Layout
 	title="About these reviews"
-	description="How Memorygram collects and publishes customer reviews."
+	description={`How ${site.companyName} reviews are collected and published.`}
 	pubDate={new Date("2026-05-24")}
 	heroImage="/blog-placeholder-about.jpg"
 >
 	<p>
-		This is the home for customer reviews of <a href={SHOP_URL} target="_blank" rel="noopener"
-			>Memorygram</a
-		> — personalized keepsakes and memory gifts, from engraved photo plaques and audio message
-		keepsakes to custom star maps and memorial wind chimes.
+		This site collects and publishes customer reviews of <a
+			href={site.shopUrl}
+			target="_blank"
+			rel="noopener">{site.companyName}</a
+		>. We aggregate reviews from across the web — the company's own site and trusted
+		third-party platforms — into one place so shoppers can see the full picture.
 	</p>
 
 	<p>
-		Every review here comes from a real customer. Reviews are collected after purchase and from
-		trusted platforms, then published as-is. We show the good and the bad: ratings range across
-		the full one-to-five-star scale, and we don't hide critical feedback.
+		Every review here comes from a real customer. We publish them as-is: ratings span the
+		full one-to-five-star scale, and we don't hide critical feedback. Where a review came
+		from a particular platform, we link back to the original.
 	</p>
 
 	<p>
-		Want to share your own experience? Reach out at <a href="mailto:info@memorygram.com"
-			>info@memorygram.com</a
-		> and we'll add your review.
+		Spotted something inaccurate, or want to share your own experience with {site.companyName}?
+		Get in touch and we'll take a look.
 	</p>
 </Layout>

@@ -6,32 +6,41 @@ import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
 import ReviewCard from "../components/ReviewCard.astro";
 import StarRating from "../components/StarRating.astro";
-import { SHOP_URL, SITE_DESCRIPTION, SITE_TITLE } from "../consts";
 import { createDb } from "../db";
-import { getPublishedReviews, getReviewStats } from "../db/queries";
+import {
+	getCompanyBySlug,
+	getPublishedReviews,
+	getReviewStats,
+} from "../db/queries";
 
-const { DATABASE_URL } = Astro.locals.runtime.env;
-const db = createDb(DATABASE_URL);
+const site = Astro.locals.site;
+const db = createDb(Astro.locals.runtime.env.DATABASE_URL);
+const company = await getCompanyBySlug(db, site.companySlug);
+if (!company) {
+	return new Response(`Unknown company: ${site.companySlug}`, { status: 404 });
+}
+
+const filter = {
+	sources: site.switches.sources,
+	minRating: site.switches.minRating,
+};
 const [stats, featured] = await Promise.all([
-	getReviewStats(db),
-	getPublishedReviews(db, 3),
+	getReviewStats(db, company.id, filter),
+	getPublishedReviews(db, company.id, { ...filter, limit: 3 }),
 ]);
 ---
 
 <!doctype html>
 <html lang="en">
 	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+		<BaseHead title={site.title} description={site.description} accent={site.accent} />
 	</head>
 	<body>
 		<Header />
 		<main>
 			<section class="hero">
-				<h1>What customers say about Memorygram</h1>
-				<p class="lede">
-					Memorygram turns memories into keepsakes people treasure. Here's what real
-					customers think.
-				</p>
+				<h1>What customers say about {company.name}</h1>
+				<p class="lede">Real reviews of {company.name}, gathered from across the web.</p>
 				{stats.count > 0 && (
 					<div class="hero-rating">
 						<StarRating rating={stats.averageRating} size="1.5em" />
@@ -43,7 +52,7 @@ const [stats, featured] = await Promise.all([
 				)}
 				<div class="cta">
 					<a class="btn btn-primary" href="/reviews">Read all reviews</a>
-					<a class="btn" href={SHOP_URL} target="_blank" rel="noopener">Shop Memorygram</a>
+					<a class="btn" href={site.shopUrl} target="_blank" rel="noopener">Visit {company.name}</a>
 				</div>
 			</section>
 
@@ -52,7 +61,7 @@ const [stats, featured] = await Promise.all([
 					<h2>Recent reviews</h2>
 					<div class="featured-grid">
 						{featured.map((review) => (
-							<ReviewCard review={review} />
+							<ReviewCard review={review} showVerified={site.switches.showVerifiedBadges} />
 						))}
 					</div>
 					<p class="more">
@@ -73,7 +82,7 @@ const [stats, featured] = await Promise.all([
 			.lede {
 				font-size: 1.15em;
 				color: rgb(var(--gray-dark));
-				max-width: 36ch;
+				max-width: 40ch;
 				margin: 0 auto 1.25em;
 			}
 			.hero-rating {

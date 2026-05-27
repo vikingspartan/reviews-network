@@ -50,6 +50,8 @@
 		"deploy": "wrangler deploy",
 		"dev": "astro dev",
 		"import:reviews": "tsx scripts/import-reviews.ts",
+		"ingest": "tsx scripts/ingest.ts",
+		"moderate": "tsx scripts/moderate.ts",
 		"preview": "astro build && wrangler dev"
 	},
 	"type": "module"

@@ -55,6 +55,38 @@ All commands are run from the root of the project, from a terminal:
 | `npm run build && npm run deploy` | Deploy your production site to Cloudflare        |
 | `npm wrangler tail`               | View real-time logs for all Workers              |
 
+## 🗄️ Database
+
+Reviews are stored in **Neon Postgres** and accessed with **Drizzle ORM**.
+
+- Schema lives in `src/db/schema.ts` (a single `reviews` table); the client factory is `src/db/index.ts`; query helpers are in `src/db/queries.ts`.
+- Copy `.env.example` → `.env` (Node tooling) and `.dev.vars.example` → `.dev.vars` (local Worker runtime), then fill in `DATABASE_URL` from the [Neon console](https://console.neon.tech). Both files are gitignored.
+
+| Command                              | Action                                                       |
+| :----------------------------------- | :----------------------------------------------------------- |
+| `npm run db:generate`                | Generate a SQL migration from the schema                     |
+| `npm run db:migrate`                 | Apply pending migrations to the database                     |
+| `npm run db:push`                    | Push the schema directly, without migration files            |
+| `npm run db:studio`                  | Open Drizzle Studio                                          |
+| `npm run import:reviews [file.csv]`  | Import reviews from a CSV (defaults to `data/reviews.sample.csv`) |
+
+## ☁️ Deployment (Cloudflare Workers Builds)
+
+`astro build` compiles the site (via `@astrojs/cloudflare`) into a Worker under `dist/`, which `wrangler.json` serves. The reviews pages are server-rendered (`prerender = false`) and read `DATABASE_URL` at runtime.
+
+Automatic deploys from GitHub are handled by [Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/). One-time setup in the Cloudflare dashboard:
+
+1. **Workers & Pages → Create → Workers → Connect to Git**, select `vikingspartan/memorygram-reviews`, production branch `main`.
+2. Build command: `npm run build` · Deploy command: `npx wrangler deploy` · Node version: 22 (pinned via `.node-version`).
+3. Add the production database secret (the SSR pages need it at runtime):
+   ```bash
+   npx wrangler secret put DATABASE_URL
+   ```
+   …or set it under the Worker's **Settings → Variables and Secrets**. Never commit this value.
+4. _(Optional)_ Attach the custom domain `memorygramreviews.com` under the Worker's **Domains & Routes**.
+
+After that, every push to `main` builds and deploys automatically. To deploy by hand instead: `npm run build && npm run deploy` (requires a one-time `wrangler login`).
+
 ## 👀 Want to learn more?
 
 Check out [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).

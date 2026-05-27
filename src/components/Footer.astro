@@ -1,14 +1,17 @@
 ---
-import { SHOP_URL } from "../consts";
-const today = new Date();
+import { DEFAULT_SITE } from "../sites/config";
+
+const site = Astro.locals.site ?? DEFAULT_SITE;
+const year = new Date().getFullYear();
 ---
 
 <footer>
 	<p class="tagline">
-		Independent customer reviews of <a href={SHOP_URL} target="_blank" rel="noopener">Memorygram</a>
-		personalized keepsakes.
+		Independent customer reviews of <a href={site.shopUrl} target="_blank" rel="noopener"
+			>{site.companyName}</a
+		>, aggregated from across the web.
 	</p>
-	<p class="copyright">&copy; {today.getFullYear()} Memorygram. All rights reserved.</p>
+	<p class="copyright">&copy; {year} {site.companyName} Reviews. All rights reserved.</p>
 </footer>
 <style>
 	footer {

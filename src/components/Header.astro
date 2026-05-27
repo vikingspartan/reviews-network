@@ -1,18 +1,20 @@
 ---
+import { DEFAULT_SITE } from "../sites/config";
 import HeaderLink from "./HeaderLink.astro";
-import { SHOP_URL, SITE_TITLE } from "../consts";
+
+const site = Astro.locals.site ?? DEFAULT_SITE;
 ---
 
 <header>
 	<nav>
-		<h2><a href="/">{SITE_TITLE}</a></h2>
+		<h2><a href="/">{site.title}</a></h2>
 		<div class="internal-links">
 			<HeaderLink href="/">Home</HeaderLink>
 			<HeaderLink href="/reviews">Reviews</HeaderLink>
 			<HeaderLink href="/about">About</HeaderLink>
 		</div>
 		<div class="shop-link">
-			<a href={SHOP_URL} target="_blank" rel="noopener">Shop Memorygram →</a>
+			<a href={site.shopUrl} target="_blank" rel="noopener">Visit {site.companyName} →</a>
 		</div>
 	</nav>
 </header>

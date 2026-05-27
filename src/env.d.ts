@@ -1,7 +1,10 @@
 type Runtime = import("@astrojs/cloudflare").Runtime<Env>;
 
 declare namespace App {
-	interface Locals extends Runtime {}
+	interface Locals extends Runtime {
+		/** The review site for this request, resolved from the hostname by middleware. */
+		site: import("./sites/config").SiteConfig;
+	}
 }
 
 // Extend the Wrangler-generated Env with our own bindings/secrets.

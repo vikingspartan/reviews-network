@@ -5,15 +5,21 @@ import StarRating from "./StarRating.astro";
 
 interface Props {
 	review: Review;
+	/** Whether to show the "verified purchase" badge (per-site switch). */
+	showVerified?: boolean;
 }
 
-const { review } = Astro.props;
+const { review, showVerified = true } = Astro.props;
 ---
 
 <article class="review-card">
 	<header class="card-head">
-		<StarRating rating={review.rating} />
-		{review.verified && (
+		{review.rating != null ? (
+			<StarRating rating={review.rating} />
+		) : (
+			<span class="source-pill">via {review.source}</span>
+		)}
+		{showVerified && review.verified && (
 			<span class="verified" title="Verified purchase">✓ Verified purchase</span>
 		)}
 	</header>
@@ -56,6 +62,15 @@ const { review } = Astro.props;
 		font-weight: 700;
 		color: #1a7f4b;
 		white-space: nowrap;
+	}
+	.source-pill {
+		font-size: 0.75rem;
+		font-weight: 700;
+		text-transform: capitalize;
+		color: rgb(var(--gray));
+		background: rgb(var(--gray-light));
+		padding: 0.15em 0.6em;
+		border-radius: 999px;
 	}
 	.card-title {
 		font-size: 1.25em;

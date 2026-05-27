@@ -8,6 +8,20 @@
       "when": 1779629344399,
       "tag": "0000_violet_longshot",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1779888037770,
+      "tag": "0001_nifty_salo",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779889401849,
+      "tag": "0002_third_william_stryker",
+      "breakpoints": true
     }
   ]
 }

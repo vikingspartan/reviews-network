@@ -6,22 +6,34 @@ import Footer from "../../components/Footer.astro";
 import Header from "../../components/Header.astro";
 import ReviewCard from "../../components/ReviewCard.astro";
 import StarRating from "../../components/StarRating.astro";
-import { SITE_TITLE } from "../../consts";
 import { createDb } from "../../db";
-import { getPublishedReviews, getReviewStats } from "../../db/queries";
+import {
+	getCompanyBySlug,
+	getPublishedReviews,
+	getReviewStats,
+} from "../../db/queries";
 
-const { DATABASE_URL } = Astro.locals.runtime.env;
-const db = createDb(DATABASE_URL);
+const site = Astro.locals.site;
+const db = createDb(Astro.locals.runtime.env.DATABASE_URL);
+const company = await getCompanyBySlug(db, site.companySlug);
+if (!company) {
+	return new Response(`Unknown company: ${site.companySlug}`, { status: 404 });
+}
+
+const filter = {
+	sources: site.switches.sources,
+	minRating: site.switches.minRating,
+};
 const [reviews, stats] = await Promise.all([
-	getPublishedReviews(db),
-	getReviewStats(db),
+	getPublishedReviews(db, company.id, { ...filter, limit: site.switches.maxReviews }),
+	getReviewStats(db, company.id, filter),
 ]);
 
-const title = `Customer Reviews | ${SITE_TITLE}`;
+const title = `Customer Reviews | ${site.title}`;
 const description =
 	stats.count > 0
-		? `Read ${stats.count} customer reviews of Memorygram keepsakes — rated ${stats.averageRating.toFixed(1)} out of 5 on average.`
-		: "Customer reviews of Memorygram personalized keepsakes.";
+		? `Read ${stats.count} customer reviews of ${company.name} — rated ${stats.averageRating.toFixed(1)} out of 5 on average.`
+		: `Customer reviews of ${company.name}.`;
 
 const maxInDistribution = Math.max(1, ...Object.values(stats.distribution));
 ---
@@ -29,15 +41,15 @@ const maxInDistribution = Math.max(1, ...Object.values(stats.distribution));
 <!doctype html>
 <html lang="en">
 	<head>
-		<BaseHead title={title} description={description} />
+		<BaseHead title={title} description={description} accent={site.accent} />
 	</head>
 	<body>
 		<Header />
 		<main>
 			<section class="summary">
-				<h1>Customer Reviews</h1>
+				<h1>{company.name} Reviews</h1>
 				{stats.count > 0 ? (
-					<div class="summary-grid">
+					<div class:list={["summary-grid", { "no-dist": !site.switches.showDistribution }]}>
 						<div class="score">
 							<span class="score-number">{stats.averageRating.toFixed(1)}</span>
 							<StarRating rating={stats.averageRating} size="1.4em" />
@@ -45,20 +57,22 @@ const maxInDistribution = Math.max(1, ...Object.values(stats.distribution));
 								Based on {stats.count} review{stats.count === 1 ? "" : "s"}
 							</p>
 						</div>
-						<ul class="distribution">
-							{[5, 4, 3, 2, 1].map((star) => (
-								<li>
-									<span class="bar-label">{star} star</span>
-									<span class="bar-track">
-										<span
-											class="bar-fill"
-											style={`width:${(stats.distribution[star] / maxInDistribution) * 100}%`}
-										></span>
-									</span>
-									<span class="bar-count">{stats.distribution[star]}</span>
-								</li>
-							))}
-						</ul>
+						{site.switches.showDistribution && (
+							<ul class="distribution">
+								{[5, 4, 3, 2, 1].map((star) => (
+									<li>
+										<span class="bar-label">{star} star</span>
+										<span class="bar-track">
+											<span
+												class="bar-fill"
+												style={`width:${(stats.distribution[star] / maxInDistribution) * 100}%`}
+											></span>
+										</span>
+										<span class="bar-count">{stats.distribution[star]}</span>
+									</li>
+								))}
+							</ul>
+						)}
 					</div>
 				) : (
 					<p>No reviews yet — check back soon.</p>
@@ -67,7 +81,7 @@ const maxInDistribution = Math.max(1, ...Object.values(stats.distribution));
 
 			<section class="reviews">
 				{reviews.map((review) => (
-					<ReviewCard review={review} />
+					<ReviewCard review={review} showVerified={site.switches.showVerifiedBadges} />
 				))}
 			</section>
 		</main>
@@ -88,6 +102,10 @@ const maxInDistribution = Math.max(1, ...Object.values(stats.distribution));
 				border: 1px solid rgb(var(--gray-light));
 				border-radius: 12px;
 				background: #fff;
+			}
+			.summary-grid.no-dist {
+				grid-template-columns: 1fr;
+				justify-items: center;
 			}
 			.score {
 				text-align: center;

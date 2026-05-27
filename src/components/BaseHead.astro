@@ -7,11 +7,13 @@ interface Props {
 	title: string;
 	description: string;
 	image?: string;
+	/** Accent color (hex) for this site, overrides the default theme. */
+	accent?: string;
 }
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
-const { title, description, image = '/blog-placeholder-1.jpg' } = Astro.props;
+const { title, description, image = '/blog-placeholder-1.jpg', accent } = Astro.props;
 ---
 
 <!-- Global Metadata -->
@@ -45,3 +47,6 @@ const { title, description, image = '/blog-placeholder-1.jpg' } = Astro.props;
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
 <meta property="twitter:image" content={new URL(image, Astro.url)} />
+
+<!-- Per-site accent theme -->
+{accent && <style is:inline set:html={`:root{--accent:${accent};}`}></style>}
