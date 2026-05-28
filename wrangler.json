@@ -11,7 +11,9 @@
 		{ "pattern": "storyworthreviews.com", "custom_domain": true },
 		{ "pattern": "www.storyworthreviews.com", "custom_domain": true },
 		{ "pattern": "rementoreviews.com", "custom_domain": true },
-		{ "pattern": "www.rementoreviews.com", "custom_domain": true }
+		{ "pattern": "www.rementoreviews.com", "custom_domain": true },
+		{ "pattern": "mylifeinabookreviews.com", "custom_domain": true },
+		{ "pattern": "www.mylifeinabookreviews.com", "custom_domain": true }
 	],
 	"kv_namespaces": [
 		{ "binding": "SESSION", "id": "acfb230726394193a6bc2a74ea4a0fe6" }
