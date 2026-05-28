@@ -1,0 +1,265 @@
+---
+export const prerender = false;
+
+import BaseHead from "../../components/BaseHead.astro";
+import { createDb } from "../../db";
+import { getCompanyBySlug, getReviewsForAdmin } from "../../db/queries";
+import { isAuthenticated } from "../../lib/admin-auth";
+
+const site = Astro.locals.site;
+
+if (!(await isAuthenticated(Astro))) {
+	return Astro.redirect("/admin/login");
+}
+
+const db = createDb(Astro.locals.runtime.env.DATABASE_URL);
+const company = await getCompanyBySlug(db, site.companySlug);
+if (!company) {
+	return new Response(`Unknown company: ${site.companySlug}`, { status: 404 });
+}
+
+const reviews = await getReviewsForAdmin(db, company.id);
+
+function excerpt(text: string, max = 140): string {
+	return text.length > max ? `${text.slice(0, max).trimEnd()}…` : text;
+}
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={`Admin · ${site.title}`} description="Review manager" accent={site.accent} />
+	</head>
+	<body>
+		<main>
+			<header class="bar">
+				<div>
+					<h1>{company.name} reviews</h1>
+					<p class="sub">
+						Drag to reorder. Star the reviews to feature on the homepage. {reviews.length} published review{reviews.length === 1 ? "" : "s"}.
+					</p>
+				</div>
+				<form method="POST" action="/admin/logout">
+					<button type="submit" class="link-btn">Sign out</button>
+				</form>
+			</header>
+
+			{reviews.length === 0 ? (
+				<p>No published reviews yet.</p>
+			) : (
+				<>
+					<div class="actions">
+						<button id="save" type="button" class="btn-primary">Save order</button>
+						<span id="status" class="status" role="status" aria-live="polite"></span>
+					</div>
+					<ol id="list" class="list">
+						{reviews.map((review) => (
+							<li class="row" draggable="true" data-id={review.id} data-featured={review.featured ? "1" : "0"}>
+								<span class="handle" aria-hidden="true">⠿</span>
+								<button type="button" class="star" aria-pressed={review.featured ? "true" : "false"} title="Feature on homepage">
+									<span class="star-icon">★</span>
+								</button>
+								<div class="meta">
+									<div class="line1">
+										<span class="rating">{review.rating != null ? `${review.rating}★` : "—"}</span>
+										<span class="author">{review.authorName}</span>
+										{review.title && <span class="title">{review.title}</span>}
+									</div>
+									<p class="body">{excerpt(review.body)}</p>
+								</div>
+							</li>
+						))}
+					</ol>
+				</>
+			)}
+		</main>
+		<style>
+			main {
+				width: 820px;
+			}
+			.bar {
+				display: flex;
+				align-items: flex-start;
+				justify-content: space-between;
+				gap: 1em;
+			}
+			.sub {
+				color: rgb(var(--gray));
+				margin-top: -0.4em;
+			}
+			.link-btn {
+				background: none;
+				border: none;
+				color: var(--accent);
+				font-weight: 700;
+				cursor: pointer;
+				padding: 0;
+			}
+			.actions {
+				position: sticky;
+				top: 0;
+				background: rgb(var(--gray-light));
+				padding: 0.75em 0;
+				display: flex;
+				align-items: center;
+				gap: 1em;
+				z-index: 1;
+			}
+			.btn-primary {
+				padding: 0.55em 1.25em;
+				border-radius: 999px;
+				border: 1px solid var(--accent);
+				background: var(--accent);
+				color: #fff;
+				font-weight: 700;
+				cursor: pointer;
+			}
+			.btn-primary:disabled {
+				opacity: 0.6;
+				cursor: default;
+			}
+			.status {
+				color: rgb(var(--gray));
+				font-size: 0.9em;
+			}
+			.status.ok { color: #0a7d33; }
+			.status.err { color: #b00020; }
+			.list {
+				list-style: none;
+				margin: 1em 0 0;
+				padding: 0;
+				display: grid;
+				gap: 0.6em;
+			}
+			.row {
+				display: grid;
+				grid-template-columns: auto auto 1fr;
+				align-items: start;
+				gap: 0.75em;
+				padding: 0.8em 1em;
+				border: 1px solid rgb(var(--gray-light));
+				border-radius: 10px;
+				background: #fff;
+			}
+			.row.dragging {
+				opacity: 0.5;
+			}
+			.row[data-featured="1"] {
+				border-color: var(--accent);
+				box-shadow: inset 3px 0 0 var(--accent);
+			}
+			.handle {
+				cursor: grab;
+				color: rgb(var(--gray));
+				font-size: 1.2em;
+				line-height: 1.4;
+				user-select: none;
+			}
+			.star {
+				background: none;
+				border: none;
+				cursor: pointer;
+				padding: 0;
+				line-height: 1.2;
+			}
+			.star-icon {
+				font-size: 1.3em;
+				color: rgb(var(--gray-light));
+			}
+			.star[aria-pressed="true"] .star-icon {
+				color: #f5a623;
+			}
+			.line1 {
+				display: flex;
+				flex-wrap: wrap;
+				align-items: baseline;
+				gap: 0.5em;
+			}
+			.rating {
+				font-weight: 700;
+				color: #f5a623;
+			}
+			.author {
+				font-weight: 700;
+			}
+			.title {
+				color: rgb(var(--gray-dark));
+			}
+			.body {
+				margin: 0.3em 0 0;
+				color: rgb(var(--gray-dark));
+				font-size: 0.95em;
+			}
+		</style>
+
+		<script>
+			const list = document.getElementById("list");
+			const saveBtn = document.getElementById("save") as HTMLButtonElement | null;
+			const statusEl = document.getElementById("status");
+
+			if (list && saveBtn && statusEl) {
+				let dragging: HTMLElement | null = null;
+
+				// Featured toggle.
+				list.addEventListener("click", (e) => {
+					const star = (e.target as HTMLElement).closest(".star");
+					if (!star) return;
+					const row = star.closest(".row") as HTMLElement;
+					const on = star.getAttribute("aria-pressed") === "true";
+					star.setAttribute("aria-pressed", on ? "false" : "true");
+					row.dataset.featured = on ? "0" : "1";
+				});
+
+				// Drag-and-drop reordering.
+				list.addEventListener("dragstart", (e) => {
+					const row = (e.target as HTMLElement).closest(".row") as HTMLElement;
+					if (!row) return;
+					dragging = row;
+					row.classList.add("dragging");
+				});
+				list.addEventListener("dragend", () => {
+					dragging?.classList.remove("dragging");
+					dragging = null;
+				});
+				list.addEventListener("dragover", (e) => {
+					e.preventDefault();
+					if (!dragging) return;
+					const rows = [...list.querySelectorAll(".row:not(.dragging)")] as HTMLElement[];
+					const after = rows.find((r) => {
+						const box = r.getBoundingClientRect();
+						return (e as DragEvent).clientY < box.top + box.height / 2;
+					});
+					if (after) list.insertBefore(dragging, after);
+					else list.appendChild(dragging);
+				});
+
+				// Save.
+				saveBtn.addEventListener("click", async () => {
+					const rows = [...list.querySelectorAll(".row")] as HTMLElement[];
+					const orderedIds = rows.map((r) => Number(r.dataset.id));
+					const featuredIds = rows
+						.filter((r) => r.dataset.featured === "1")
+						.map((r) => Number(r.dataset.id));
+					saveBtn.disabled = true;
+					statusEl.className = "status";
+					statusEl.textContent = "Saving…";
+					try {
+						const res = await fetch("/admin/save", {
+							method: "POST",
+							headers: { "content-type": "application/json" },
+							body: JSON.stringify({ orderedIds, featuredIds }),
+						});
+						if (!res.ok) throw new Error(await res.text());
+						statusEl.className = "status ok";
+						statusEl.textContent = `Saved · ${featuredIds.length} featured`;
+					} catch (err) {
+						statusEl.className = "status err";
+						statusEl.textContent = `Save failed: ${err instanceof Error ? err.message : err}`;
+					} finally {
+						saveBtn.disabled = false;
+					}
+				});
+			}
+		</script>
+	</body>
+</html>

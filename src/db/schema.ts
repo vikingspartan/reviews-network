@@ -110,6 +110,11 @@ export const reviews = pgTable(
 		sourceUrl: text("source_url"),
 		/** Whether the reviewer is a verified purchaser. */
 		verified: boolean("verified").notNull().default(false),
+		/** Hand-picked to appear in the homepage "featured" section, set in the admin. */
+		featured: boolean("featured").notNull().default(false),
+		/** Manual display rank (lower = earlier). NULL means unranked: such reviews
+		 * sort after ranked ones, newest first. Set by drag-and-drop in the admin. */
+		sortOrder: integer("sort_order"),
 		/** Moderation status; only "published" reviews are shown publicly. */
 		status: reviewStatus("status").notNull().default("published"),
 		/** When the review was written by the customer. */
@@ -129,6 +134,12 @@ export const reviews = pgTable(
 			t.companyId,
 			t.status,
 			t.reviewedAt,
+		),
+		// Manual display ordering: a company's published reviews by hand-set rank.
+		index("reviews_company_status_sort_idx").on(
+			t.companyId,
+			t.status,
+			t.sortOrder,
 		),
 		index("reviews_rating_idx").on(t.rating),
 		check(

@@ -1,6 +1,13 @@
-import { and, count, desc, eq, gte, inArray, type SQL } from "drizzle-orm";
+import { and, count, desc, eq, gte, inArray, sql, type SQL } from "drizzle-orm";
 import type { Database } from "./index";
-import { type Company, companies, reviews } from "./schema";
+import { type Company, type Review, companies, reviews } from "./schema";
+
+/**
+ * Display order shared by every public listing: hand-ranked reviews first
+ * (lowest `sort_order`), then unranked reviews newest-first. Set the rank by
+ * drag-and-drop in the admin.
+ */
+const displayOrder = [sql`${reviews.sortOrder} asc nulls last`, desc(reviews.reviewedAt)];
 
 /** Display switches applied when fetching a company's reviews. */
 export interface ReviewFilter {
@@ -39,7 +46,7 @@ function publishedWhere(companyId: number, filter: ReviewFilter): SQL | undefine
 	return and(...conditions);
 }
 
-/** Published reviews for a company, newest first, honoring the display filter. */
+/** Published reviews for a company in display order, honoring the display filter. */
 export function getPublishedReviews(
 	db: Database,
 	companyId: number,
@@ -49,8 +56,64 @@ export function getPublishedReviews(
 		.select()
 		.from(reviews)
 		.where(publishedWhere(companyId, filter))
-		.orderBy(desc(reviews.reviewedAt));
+		.orderBy(...displayOrder);
 	return filter.limit ? base.limit(filter.limit) : base;
+}
+
+/**
+ * Reviews hand-picked for the homepage "featured" section, in display order.
+ * Falls back to the most recent published reviews when none are flagged, so a
+ * site that hasn't curated yet still shows something.
+ */
+export async function getFeaturedReviews(
+	db: Database,
+	companyId: number,
+	filter: ReviewFilter & { fallbackLimit?: number } = {},
+): Promise<Review[]> {
+	const featured = await db
+		.select()
+		.from(reviews)
+		.where(and(publishedWhere(companyId, filter), eq(reviews.featured, true)))
+		.orderBy(...displayOrder);
+	if (featured.length > 0) return featured;
+	return getPublishedReviews(db, companyId, {
+		...filter,
+		limit: filter.fallbackLimit ?? 3,
+	});
+}
+
+/** Every published review for a company, in display order, for the admin manager. */
+export function getReviewsForAdmin(db: Database, companyId: number): Promise<Review[]> {
+	return db
+		.select()
+		.from(reviews)
+		.where(and(eq(reviews.companyId, companyId), eq(reviews.status, "published")))
+		.orderBy(...displayOrder);
+}
+
+/**
+ * Persist a hand-set ordering and featured selection for one company's reviews.
+ * `orderedIds` is the full list of review ids in their new display order; each
+ * row's `sort_order` becomes its index. `featuredIds` flags the homepage picks.
+ * Scoped to `companyId` so one tenant can never reorder another's reviews.
+ */
+export async function saveReviewOrder(
+	db: Database,
+	companyId: number,
+	orderedIds: number[],
+	featuredIds: number[],
+): Promise<void> {
+	if (orderedIds.length === 0) return;
+	const featured = new Set(featuredIds);
+	const rows = orderedIds.map(
+		(id, i) => sql`(${id}::int, ${i}::int, ${featured.has(id)}::boolean)`,
+	);
+	await db.execute(sql`
+		UPDATE ${reviews} AS r
+		SET sort_order = v.ord, featured = v.feat, updated_at = now()
+		FROM (VALUES ${sql.join(rows, sql`, `)}) AS v(id, ord, feat)
+		WHERE r.id = v.id AND r.company_id = ${companyId}
+	`);
 }
 
 export interface ReviewStats {

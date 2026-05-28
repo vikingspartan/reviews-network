@@ -1,0 +1,81 @@
+---
+export const prerender = false;
+
+import BaseHead from "../../components/BaseHead.astro";
+import { createSession, isAuthenticated, passwordMatches } from "../../lib/admin-auth";
+
+const site = Astro.locals.site;
+
+// Already logged in? Go straight to the manager.
+if (await isAuthenticated(Astro)) {
+	return Astro.redirect("/admin");
+}
+
+let error: string | null = null;
+if (Astro.request.method === "POST") {
+	const form = await Astro.request.formData();
+	const password = String(form.get("password") ?? "");
+	if (passwordMatches(Astro.locals.runtime.env, password)) {
+		await createSession(Astro);
+		return Astro.redirect("/admin");
+	}
+	error = "Incorrect password.";
+}
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={`Admin · ${site.title}`} description="Admin sign in" accent={site.accent} />
+	</head>
+	<body>
+		<main>
+			<h1>Admin sign in</h1>
+			<p class="sub">{site.companyName} review manager</p>
+			{error && <p class="error">{error}</p>}
+			<form method="POST">
+				<label for="password">Password</label>
+				<input id="password" name="password" type="password" autocomplete="current-password" autofocus required />
+				<button type="submit">Sign in</button>
+			</form>
+		</main>
+		<style>
+			main {
+				width: 360px;
+				margin: 4em auto;
+			}
+			.sub {
+				color: rgb(var(--gray));
+				margin-top: -0.5em;
+			}
+			form {
+				display: grid;
+				gap: 0.5em;
+				margin-top: 1.5em;
+			}
+			label {
+				font-weight: 700;
+			}
+			input {
+				padding: 0.6em 0.75em;
+				border: 1px solid rgb(var(--gray-light));
+				border-radius: 8px;
+				font-size: 1em;
+			}
+			button {
+				margin-top: 0.5em;
+				padding: 0.6em 1.25em;
+				border-radius: 999px;
+				border: 1px solid var(--accent);
+				background: var(--accent);
+				color: #fff;
+				font-weight: 700;
+				cursor: pointer;
+			}
+			.error {
+				color: #b00020;
+				font-weight: 700;
+			}
+		</style>
+	</body>
+</html>

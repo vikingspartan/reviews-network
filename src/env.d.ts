@@ -16,5 +16,12 @@ declare namespace Cloudflare {
 		 * Local dev: set in `.dev.vars`. Production: `wrangler secret put DATABASE_URL`.
 		 */
 		DATABASE_URL: string;
+		/**
+		 * Shared password for the /admin review manager.
+		 * Local dev: set in `.dev.vars`. Production: `wrangler secret put ADMIN_PASSWORD`.
+		 */
+		ADMIN_PASSWORD: string;
+		/** KV namespace holding admin login sessions (bound in wrangler.json). */
+		SESSION: KVNamespace;
 	}
 }

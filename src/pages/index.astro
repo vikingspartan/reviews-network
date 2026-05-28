@@ -9,7 +9,7 @@ import StarRating from "../components/StarRating.astro";
 import { createDb } from "../db";
 import {
 	getCompanyBySlug,
-	getPublishedReviews,
+	getFeaturedReviews,
 	getReviewStats,
 } from "../db/queries";
 
@@ -26,7 +26,7 @@ const filter = {
 };
 const [stats, featured] = await Promise.all([
 	getReviewStats(db, company.id, filter),
-	getPublishedReviews(db, company.id, { ...filter, limit: 3 }),
+	getFeaturedReviews(db, company.id, { ...filter, fallbackLimit: 3 }),
 ]);
 ---
 
@@ -60,7 +60,7 @@ const [stats, featured] = await Promise.all([
 
 			{featured.length > 0 && (
 				<section class="featured">
-					<h2>Recent reviews</h2>
+					<h2>Featured reviews</h2>
 					<div class="featured-grid">
 						{featured.map((review) => (
 							<ReviewCard review={review} showVerified={site.switches.showVerifiedBadges} />
