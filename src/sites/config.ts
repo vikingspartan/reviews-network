@@ -71,6 +71,18 @@ const REMENTO_SITE: SiteConfig = {
 	switches: { showDistribution: true, showVerifiedBadges: false },
 };
 
+/** My Life in a Book — aggregates the company's Trustpilot reviews. */
+const MYLIFEINABOOK_SITE: SiteConfig = {
+	companySlug: "mylifeinabook",
+	companyName: "My Life in a Book",
+	title: "My Life in a Book Reviews",
+	description:
+		"Independent customer reviews of My Life in a Book, aggregated from across the web.",
+	accent: "#6d28d9",
+	// No shopUrl: this site intentionally does not link out to mylifeinabook.com.
+	switches: { showDistribution: true, showVerifiedBadges: false },
+};
+
 /** Fallback for unknown hostnames and local dev (no single primary brand). */
 export const DEFAULT_SITE: SiteConfig = STORYWORTH_SITE;
 
@@ -90,6 +102,9 @@ const SITE_CONFIGS: Record<string, SiteConfig> = {
 	"rementoreviews.com": REMENTO_SITE,
 	"www.rementoreviews.com": REMENTO_SITE,
 	"remento.localhost": REMENTO_SITE,
+	"mylifeinabookreviews.com": MYLIFEINABOOK_SITE,
+	"www.mylifeinabookreviews.com": MYLIFEINABOOK_SITE,
+	"mylifeinabook.localhost": MYLIFEINABOOK_SITE,
 };
 
 /** Resolve the site for a hostname, falling back to the default site. */
