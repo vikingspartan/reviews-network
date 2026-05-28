@@ -52,7 +52,9 @@ const [stats, featured] = await Promise.all([
 				)}
 				<div class="cta">
 					<a class="btn btn-primary" href="/reviews">Read all reviews</a>
-					<a class="btn" href={site.shopUrl} target="_blank" rel="noopener">Visit {company.name}</a>
+					{site.shopUrl && (
+						<a class="btn" href={site.shopUrl} target="_blank" rel="noopener">Visit {company.name}</a>
+					)}
 				</div>
 			</section>
 

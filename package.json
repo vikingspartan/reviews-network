@@ -50,8 +50,10 @@
 		"deploy": "wrangler deploy",
 		"dev": "astro dev",
 		"import:reviews": "tsx scripts/import-reviews.ts",
+		"add:trustpilot": "tsx scripts/add-trustpilot-source.ts",
 		"ingest": "tsx scripts/ingest.ts",
 		"moderate": "tsx scripts/moderate.ts",
+		"import:bbb-storyworth": "tsx scripts/import-bbb-storyworth.ts",
 		"preview": "astro build && wrangler dev"
 	},
 	"type": "module"

@@ -59,7 +59,7 @@ export const reviewSources = pgTable(
 			.notNull()
 			.references(() => companies.id, { onDelete: "cascade" }),
 		kind: sourceKind("kind").notNull(),
-		/** Source-specific config, e.g. { subreddit, query } / { placeId } / { businessUnitId }. */
+		/** Source-specific config, e.g. { subreddit, query } / { placeId } / { slug }. */
 		config: jsonb("config")
 			.$type<Record<string, unknown>>()
 			.notNull()

@@ -29,8 +29,9 @@ export interface SiteConfig {
 	description: string;
 	/** Accent color (hex), themes links and buttons. */
 	accent: string;
-	/** The company's own website, linked from header/footer. */
-	shopUrl: string;
+	/** The company's own website, linked from header/footer. Omit to render the
+	 * company name as plain text and show no outbound link to it. */
+	shopUrl?: string;
 	switches: SiteSwitches;
 }
 
@@ -58,10 +59,35 @@ const BRIGHTSIDE_SITE: SiteConfig = {
 	switches: { showDistribution: true, showVerifiedBadges: false, minRating: 4 },
 };
 
+/** Storyworth — aggregates the company's Trustpilot reviews. */
+const STORYWORTH_SITE: SiteConfig = {
+	companySlug: "storyworth",
+	companyName: "Storyworth",
+	title: "Storyworth Reviews",
+	description:
+		"Independent customer reviews of Storyworth, aggregated from across the web.",
+	accent: "#e2603f",
+	// No shopUrl: this site intentionally does not link out to storyworth.com.
+	// Trustpilot reviews aren't verified purchases, so the badge is hidden.
+	switches: { showDistribution: true, showVerifiedBadges: false },
+};
+
+/** Remento — aggregates the company's Trustpilot reviews. */
+const REMENTO_SITE: SiteConfig = {
+	companySlug: "remento",
+	companyName: "Remento",
+	title: "Remento Reviews",
+	description:
+		"Independent customer reviews of Remento, aggregated from across the web.",
+	accent: "#0e7490",
+	// No shopUrl: this site intentionally does not link out to remento.co.
+	switches: { showDistribution: true, showVerifiedBadges: false },
+};
+
 /**
  * Hostname → site. Add a domain here (and its company row in the DB) to launch
- * another review site. `localhost` and `127.0.0.1` map to the two example
- * tenants so both can be exercised locally.
+ * another review site. The `*.localhost` hosts map the example tenants so they
+ * can be exercised locally.
  */
 const SITE_CONFIGS: Record<string, SiteConfig> = {
 	"memorygramreviews.com": DEFAULT_SITE,
@@ -70,6 +96,12 @@ const SITE_CONFIGS: Record<string, SiteConfig> = {
 	"brightsidereviews.com": BRIGHTSIDE_SITE,
 	"www.brightsidereviews.com": BRIGHTSIDE_SITE,
 	"127.0.0.1": BRIGHTSIDE_SITE,
+	"storyworthreviews.com": STORYWORTH_SITE,
+	"www.storyworthreviews.com": STORYWORTH_SITE,
+	"storyworth.localhost": STORYWORTH_SITE,
+	"rementoreviews.com": REMENTO_SITE,
+	"www.rementoreviews.com": REMENTO_SITE,
+	"remento.localhost": REMENTO_SITE,
 };
 
 /** Resolve the site for a hostname, falling back to the default site. */

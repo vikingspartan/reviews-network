@@ -7,9 +7,11 @@ const year = new Date().getFullYear();
 
 <footer>
 	<p class="tagline">
-		Independent customer reviews of <a href={site.shopUrl} target="_blank" rel="noopener"
-			>{site.companyName}</a
-		>, aggregated from across the web.
+		Independent customer reviews of {site.shopUrl ? (
+			<a href={site.shopUrl} target="_blank" rel="noopener">{site.companyName}</a>
+		) : (
+			site.companyName
+		)}, aggregated from across the web.
 	</p>
 	<p class="copyright">&copy; {year} {site.companyName} Reviews. All rights reserved.</p>
 </footer>

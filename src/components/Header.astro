@@ -13,9 +13,11 @@ const site = Astro.locals.site ?? DEFAULT_SITE;
 			<HeaderLink href="/reviews">Reviews</HeaderLink>
 			<HeaderLink href="/about">About</HeaderLink>
 		</div>
-		<div class="shop-link">
-			<a href={site.shopUrl} target="_blank" rel="noopener">Visit {site.companyName} →</a>
-		</div>
+		{site.shopUrl && (
+			<div class="shop-link">
+				<a href={site.shopUrl} target="_blank" rel="noopener">Visit {site.companyName} →</a>
+			</div>
+		)}
 	</nav>
 </header>
 <style>

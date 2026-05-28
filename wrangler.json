@@ -7,6 +7,12 @@
 		"directory": "./dist",
 		"binding": "ASSETS"
 	},
+	"routes": [
+		{ "pattern": "storyworthreviews.com", "custom_domain": true },
+		{ "pattern": "www.storyworthreviews.com", "custom_domain": true },
+		{ "pattern": "rementoreviews.com", "custom_domain": true },
+		{ "pattern": "www.rementoreviews.com", "custom_domain": true }
+	],
 	"observability": {
 		"enabled": true
 	},

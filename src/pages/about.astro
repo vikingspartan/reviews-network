@@ -13,11 +13,11 @@ const site = Astro.locals.site;
 	heroImage="/blog-placeholder-about.jpg"
 >
 	<p>
-		This site collects and publishes customer reviews of <a
-			href={site.shopUrl}
-			target="_blank"
-			rel="noopener">{site.companyName}</a
-		>. We aggregate reviews from across the web — the company's own site and trusted
+		This site collects and publishes customer reviews of {site.shopUrl ? (
+			<a href={site.shopUrl} target="_blank" rel="noopener">{site.companyName}</a>
+		) : (
+			site.companyName
+		)}. We aggregate reviews from across the web — the company's own site and trusted
 		third-party platforms — into one place so shoppers can see the full picture.
 	</p>
 
