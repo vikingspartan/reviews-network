@@ -33,7 +33,7 @@ export const redditConnector: Connector = {
 	async fetch({ source }: SourceRunContext): Promise<RawReview[]> {
 		const cfg = source.config as RedditConfig;
 		if (!cfg.query) {
-			throw new Error('Reddit source needs config.query (e.g. {"query":"memorygram"}).');
+			throw new Error('Reddit source needs config.query (e.g. {"query":"storyworth"}).');
 		}
 
 		const limit = Math.min(cfg.limit ?? 50, 100);
@@ -49,7 +49,7 @@ export const redditConnector: Connector = {
 
 		const res = await fetch(`${base}?${params}`, {
 			headers: {
-				"user-agent": "memorygram-reviews-aggregator/0.1 (by info@memorygram.com)",
+				"user-agent": "reviews-network-aggregator/0.1",
 			},
 		});
 		if (!res.ok) {

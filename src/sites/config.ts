@@ -1,5 +1,3 @@
-import { SHOP_URL, SITE_DESCRIPTION, SITE_TITLE } from "../consts";
-
 /** Per-site display switches — "what to show and what to hide" for a frontend. */
 export interface SiteSwitches {
 	/** Show the 1-5 star distribution chart on the reviews page. */
@@ -35,18 +33,7 @@ export interface SiteConfig {
 	switches: SiteSwitches;
 }
 
-/** Memorygram — the default/primary site. */
-export const DEFAULT_SITE: SiteConfig = {
-	companySlug: "memorygram",
-	companyName: "Memorygram",
-	title: SITE_TITLE,
-	description: SITE_DESCRIPTION,
-	accent: "#2337ff",
-	shopUrl: SHOP_URL,
-	switches: { showDistribution: true, showVerifiedBadges: true },
-};
-
-/** Example second tenant, to demonstrate multiple companies on one instance. */
+/** Example tenant, to demonstrate multiple companies on one instance. */
 const BRIGHTSIDE_SITE: SiteConfig = {
 	companySlug: "brightside",
 	companyName: "Brightside Mattress",
@@ -84,15 +71,16 @@ const REMENTO_SITE: SiteConfig = {
 	switches: { showDistribution: true, showVerifiedBadges: false },
 };
 
+/** Fallback for unknown hostnames and local dev (no single primary brand). */
+export const DEFAULT_SITE: SiteConfig = STORYWORTH_SITE;
+
 /**
  * Hostname → site. Add a domain here (and its company row in the DB) to launch
- * another review site. The `*.localhost` hosts map the example tenants so they
- * can be exercised locally.
+ * another review site. The `*.localhost` hosts (and `127.0.0.1`) map tenants so
+ * they can be exercised locally.
  */
 const SITE_CONFIGS: Record<string, SiteConfig> = {
-	"memorygramreviews.com": DEFAULT_SITE,
-	"www.memorygramreviews.com": DEFAULT_SITE,
-	localhost: DEFAULT_SITE,
+	localhost: STORYWORTH_SITE,
 	"brightsidereviews.com": BRIGHTSIDE_SITE,
 	"www.brightsidereviews.com": BRIGHTSIDE_SITE,
 	"127.0.0.1": BRIGHTSIDE_SITE,

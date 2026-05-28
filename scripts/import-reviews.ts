@@ -3,7 +3,7 @@
  *
  * Usage:
  *   npm run import:reviews -- <file.csv> <company-slug> [company-name]
- *   npm run import:reviews -- data/reviews.sample.csv memorygram Memorygram
+ *   npm run import:reviews -- data/reviews.csv storyworth Storyworth
  *
  * The company is upserted by slug (created if it doesn't exist). Reviews are
  * tagged with that company's id. Re-imports are idempotent for rows that carry

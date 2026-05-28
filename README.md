@@ -76,14 +76,14 @@ Reviews are stored in **Neon Postgres** and accessed with **Drizzle ORM**.
 
 Automatic deploys from GitHub are handled by [Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/). One-time setup in the Cloudflare dashboard:
 
-1. **Workers & Pages → Create → Workers → Connect to Git**, select `vikingspartan/memorygram-reviews`, production branch `main`.
+1. **Workers & Pages → Create → Workers → Connect to Git**, select `vikingspartan/reviews-network`, production branch `main`.
 2. Build command: `npm run build` · Deploy command: `npx wrangler deploy` · Node version: 22 (pinned via `.node-version`).
 3. Add the production database secret (the SSR pages need it at runtime):
    ```bash
    npx wrangler secret put DATABASE_URL
    ```
    …or set it under the Worker's **Settings → Variables and Secrets**. Never commit this value.
-4. _(Optional)_ Attach the custom domain `memorygramreviews.com` under the Worker's **Domains & Routes**.
+4. _(Optional)_ Attach custom domains (e.g. `storyworthreviews.com`) under the Worker's **Domains & Routes**.
 
 After that, every push to `main` builds and deploys automatically. To deploy by hand instead: `npm run build && npm run deploy` (requires a one-time `wrangler login`).
 

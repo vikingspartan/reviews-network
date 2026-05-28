@@ -3,8 +3,8 @@
  *
  * Usage:
  *   npm run ingest -- <company-slug> [source-kind]
- *   npm run ingest -- memorygram           # all enabled sources
- *   npm run ingest -- memorygram reddit    # just the reddit source(s)
+ *   npm run ingest -- storyworth           # all enabled sources
+ *   npm run ingest -- storyworth reddit    # just the reddit source(s)
  *
  * Fetched reviews are filtered by each source's keywords + rating range,
  * de-duplicated, and inserted with status="pending" for moderation.

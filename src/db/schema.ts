@@ -36,7 +36,7 @@ export const sourceKind = pgEnum("source_kind", [
  */
 export const companies = pgTable("companies", {
 	id: serial("id").primaryKey(),
-	/** Stable key referenced by site config (e.g. "memorygram"). */
+	/** Stable key referenced by site config (e.g. "storyworth"). */
 	slug: text("slug").notNull().unique(),
 	name: text("name").notNull(),
 	/** The company's own website (linked from the review site). */
